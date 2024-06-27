@@ -3,7 +3,7 @@ Functions necessary for running a virtual cookie shop.
 See README.md for instructions.
 Do not run this file directly.  Rather, run main.py instead.
 """
-
+import csv
 
 def bake_cookies(filepath):
     """
@@ -16,6 +16,30 @@ def bake_cookies(filepath):
     :returns: A list of all cookie data, where each cookie is represented as a dictionary.
     """
     # write your code for this function below here.
+    cookie = []
+    with open(filepath, mode = 'r') as file:
+        csv_reader = csv.reader(file)
+
+        first = True
+        for row in csv_reader:
+            if first:
+                first = False
+                continue
+            new_cookie = {}
+            count = 0
+            for item in row:
+                if count == 0:
+                    new_cookie['id'] = int(item)
+                elif count == 1:
+                    new_cookie['title'] = item
+                elif count == 2:
+                    new_cookie['description'] = item
+                elif count == 3:
+                    new_cookie['price'] = float(item[1:])
+                count += 1
+            cookie.append(new_cookie)
+    return cookie
+
 
 
 def welcome():
@@ -27,6 +51,7 @@ def welcome():
 
     """
     # write your code for this function below this line
+    print("Welcome to the Python Cookie Shop!\nWe feed each according to their need.")
 
 
 def display_cookies(cookies):
@@ -48,6 +73,15 @@ def display_cookies(cookies):
     :param cookies: a list of all cookies in the shop, where each cookie is represented as a dictionary.
     """
     # write your code for this function below this line
+    print("Here are the cookies we have in the shop for you:\n")
+
+    for cook in cookies:
+        print(f"    #{cook['id']} - {cook['title']}")
+        print(f"    {cook['description']}")
+        print(f"    Price: ${cook['price']:.2f}\n")
+
+
+
 
 
 def get_cookie_from_dict(id, cookies):
@@ -59,6 +93,9 @@ def get_cookie_from_dict(id, cookies):
     :returns: the matching cookie, as a dictionary
     """
     # write your code for this function below this line
+    for cook in cookies:
+        if cook['id'] == id:
+            return cook
 
 
 def solicit_quantity(id, cookies):
@@ -77,6 +114,15 @@ def solicit_quantity(id, cookies):
     :returns: The quantity the user entered, as an integer.
     """
     # write your code for this function below this line
+    cook = get_cookie_from_dict(id, cookies)
+
+    while True:
+        number = input(f"   My favorite! How many {cook['title']} would you like?")
+        if number.isdigit():
+            cost = int(number) * cook['price']
+            print(f"    Your subtotal for {number} {cook['title']} is ${cost:.2f}.")
+            return int(number)
+
 
 
 def solicit_order(cookies):
@@ -96,7 +142,14 @@ def solicit_order(cookies):
     :returns: A list of the ids and quantities of each cookies the user wants to order.
     """
     # write your code for this function below this line
+    cookies_ordered = []
 
+    while True:
+        my_id = input("    What cookie would you like?")
+        if my_id.isdigit() and int(my_id) <= len(cookies):
+            cookies_ordered.append({'id' : int(my_id), 'quantity' : solicit_quantity(int(my_id), cookies)})
+        elif (my_id == 'finished' or my_id == 'done' or my_id == 'quit' or my_id == 'exit'):
+            return cookies_ordered
 
 def display_order_total(order, cookies):
     """
@@ -118,6 +171,18 @@ def display_order_total(order, cookies):
 
     """
     # write your code for this function below this line
+    print(f"    Thank you for your order. You have ordered:\n")
+
+    price = 0
+
+    for item in order:
+        cook = get_cookie_from_dict(item['id'], cookies)
+        print(f"    -{item['quantity']} {cook['title']}")
+        price += cook['price'] * item['quantity']
+    
+    print(f"    Your total is ${price:.2f}.\n    Please pay with Bitcoin before picking-up.")
+
+    print(f"    Thank you!\n    -The Python Cookie Shop Robot.")
 
 
 def run_shop(cookies):
@@ -133,3 +198,4 @@ def run_shop(cookies):
     display_cookies(cookies)
     order = solicit_order(cookies)
     display_order_total(order, cookies)
+
